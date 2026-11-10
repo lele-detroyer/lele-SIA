@@ -603,7 +603,7 @@ def akses_cepat():
 
 # ------------------------- Router utama -------------------------
 def main():
-    st.sidebar.title("🐟 SIA Lele")
+    st.sidebar.title("🐟 SIA Segar")
     if "page" not in st.session_state:
         st.session_state.page = "Dashboard"
     st.sidebar.radio("Menu", PAGES, key="page")
