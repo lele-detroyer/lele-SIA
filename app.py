@@ -220,8 +220,23 @@ def dashboard():
     c3.metric("Total Persediaan", rp(persediaan))
     c3.button("Buka Buku Pembantu", on_click=go, args=("Akses Cepat", "Buku Pembantu"), key="b_stok")
 
+    st.subheader("📈 Grafik Pendapatan")
+    sl = tbl("sales")
+    if sl.empty:
+        st.info("Belum ada data penjualan.")
+    else:
+        sl["tanggal"] = pd.to_datetime(sl["tanggal"])
+        sl["total"] = pd.to_numeric(sl["total"], errors="coerce").fillna(0)
+        per_bulan = (
+            sl.groupby(sl["tanggal"].dt.to_period("M").astype(str))["total"]
+            .sum()
+            .rename("Pendapatan")
+        )
+        st.bar_chart(per_bulan)
+
     st.subheader("Persediaan")
     d1, d2 = st.columns(2)
+    
     def stok(k):
         if sm.empty:
             return 0.0
