@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 from datetime import date
 from supabase import create_client
-import altair as alt
 
 # =========================================================
 # SIA BUDIDAYA LELE
@@ -221,22 +220,20 @@ def dashboard():
     c3.metric("Total Persediaan", rp(persediaan))
     c3.button("Buka Buku Pembantu", on_click=go, args=("Akses Cepat", "Buku Pembantu"), key="b_stok")
 
-    data = per_bulan.reset_index()
-    data.columns = ["Bulan", "Pendapatan"]
-    maks = float(data["Pendapatan"].max())
-    ticks = list(range(0, int(maks // 100000 + 2) * 100000, 100000))
-    grafik = alt.Chart(data).mark_bar().encode(
-        x=alt.X("Bulan:N", title=None, axis=alt.Axis(labelAngle=0)),
-        y=alt.Y(
-            "Pendapatan:Q",
-            title="Pendapatan (Rp)",
-            axis=alt.Axis(values=ticks, format=",.0f"),
-            scale=alt.Scale(domain=[0, ticks[-1]]),
-            ),
-        tooltip=["Bulan", "Pendapatan"],
+    st.subheader("📈 Grafik Pendapatan")
+    sl = tbl("sales")
+    if sl.empty:
+        st.info("Belum ada data penjualan.")
+    else:
+        sl["tanggal"] = pd.to_datetime(sl["tanggal"])
+        sl["total"] = pd.to_numeric(sl["total"], errors="coerce").fillna(0)
+        per_bulan = (
+            sl.groupby(sl["tanggal"].dt.to_period("M").astype(str))["total"]
+            .sum()
+            .rename("Pendapatan")
         )
-        st.altair_chart(grafik, use_container_width=True)
-    
+        st.bar_chart(per_bulan)
+        
     st.subheader("Persediaan")
     d1, d2 = st.columns(2)
     
